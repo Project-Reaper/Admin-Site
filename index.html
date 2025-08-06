@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hell's Gate Admin Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Cinzel', serif;
+      background: radial-gradient(circle, #0a0a0a, #000000);
+      overflow: hidden;
+      perspective: 1200px;
+      color: #fff;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: url('https://www.transparenttextures.com/patterns/stardust.png');
+      opacity: 0.08;
+      animation: pulseBG 10s infinite alternate;
+      z-index: -2;
+    }
+
+    @keyframes pulseBG {
+      from { opacity: 0.05; }
+      to { opacity: 0.15; }
+    }
+
+    .scene {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+      position: relative;
+      transition: transform 0.2s ease-out;
+    }
+
+    .magic-circle {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      transform: translateZ(-100px) scale(1.2);
+      z-index: -1;
+      filter: brightness(1.6) saturate(2);
+    }
+
+    .ring, .rune-ring, .glow-circle {
+      position: absolute;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .ring {
+      width: 100%;
+      height: 100%;
+      border: 8px dashed red;
+      animation: rotate 25s linear infinite;
+      filter: drop-shadow(0 0 6px red);
+    }
+
+    .rune-ring {
+      width: 80%;
+      height: 80%;
+      border: 6px dotted red;
+      animation: rotateReverse 40s linear infinite;
+      filter: drop-shadow(0 0 5px red);
+    }
+
+    .glow-circle {
+      width: 120%;
+      height: 120%;
+      box-shadow: 0 0 100px red, inset 0 0 120px red;
+      opacity: 0.4;
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    @keyframes rotateReverse {
+      from { transform: translate(-50%, -50%) rotate(360deg); }
+      to { transform: translate(-50%, -50%) rotate(0deg); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.75; }
+    }
+
+    .form-container {
+      position: relative;
+      background: rgba(30, 0, 0, 0.9);
+      padding: 40px;
+      border: 2px solid red;
+      border-radius: 12px;
+      box-shadow: 0 0 40px red, inset 0 0 10px red;
+      width: 90%;
+      max-width: 360px;
+      z-index: 1;
+      backdrop-filter: blur(6px);
+      transform-style: preserve-3d;
+      transform: translateZ(60px);
+    }
+
+    h2 {
+      text-align: center;
+      color: red;
+      margin-bottom: 25px;
+      text-shadow: 0 0 8px red;
+    }
+
+    input, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+
+    input {
+      border: 1px solid red;
+      background: #111;
+      color: red;
+    }
+
+    .password-container {
+      position: relative;
+    }
+
+    #togglePassword {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: red;
+      font-size: 1.2em;
+      transition: 0.3s;
+    }
+
+    #togglePassword:hover {
+      transform: translateY(-50%) scale(1.2);
+      filter: brightness(1.4);
+    }
+
+    button {
+      background: red;
+      color: white;
+      border: none;
+      box-shadow: 0 0 15px red;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: darkred;
+      box-shadow: 0 0 25px red;
+    }
+
+    .error-msg {
+      margin-top: 10px;
+      color: orange;
+      font-size: 0.9em;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scene" id="scene">
+    <div class="magic-circle">
+      <div class="glow-circle"></div>
+      <div class="ring"></div>
+      <div class="rune-ring"></div>
+    </div>
+
+    <div class="form-container">
+      <h2>Admin Login</h2>
+      <input type="text" id="adminUsername" placeholder="Admin Username" />
+      <div class="password-container">
+        <input type="password" id="adminPassword" placeholder="Password" />
+        <span id="togglePassword" title="Show/Hide Password">👁️</span>
+      </div>
+      <button onclick="adminLogin()">Enter Gate</button>
+      <p id="adminError" class="error-msg"></p>
+    </div>
+  </div>
+
+  <script type="module">
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR5VuoKMKMij8yD2fexM1GCKuhAlnCAk0",
+      authDomain: "admin-9ddeb.firebaseapp.com",
+      databaseURL: "https://admin-9ddeb-default-rtdb.firebaseio.com",
+      projectId: "admin-9ddeb",
+      storageBucket: "admin-9ddeb.appspot.com",
+      messagingSenderId: "886793043821",
+      appId: "1:886793043821:web:c469d30496e14bba836464"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    const toggleBtn = document.getElementById("togglePassword");
+    const pwdField = document.getElementById("adminPassword");
+
+    toggleBtn.addEventListener("click", () => {
+      const isHidden = pwdField.type === "password";
+      pwdField.type = isHidden ? "text" : "password";
+      toggleBtn.textContent = isHidden ? "👁️‍🗨️" : "👁️";
+    });
+
+    window.adminLogin = async function () {
+      const username = document.getElementById("adminUsername").value.trim();
+      const password = document.getElementById("adminPassword").value;
+      const errorMsg = document.getElementById("adminError");
+      errorMsg.textContent = "";
+
+      if (!username || !password) {
+        errorMsg.textContent = "Please enter both username and password.";
+        return;
+      }
+
+      try {
+        const snapshot = await db.ref("usernames/" + username).get();
+        if (!snapshot.exists()) {
+          errorMsg.textContent = "Username not found.";
+          return;
+        }
+
+        const email = snapshot.val();
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
+
+        const isAdminSnapshot = await db.ref("admins/" + uid).get();
+        if (isAdminSnapshot.exists() && isAdminSnapshot.val() === true) {
+          window.location.href = "admin.html";
+        } else {
+          errorMsg.textContent = "Access Denied: Not an Admin.";
+          auth.signOut();
+        }
+      } catch (error) {
+        errorMsg.textContent = error.message;
+      }
+    };
+
+    const scene = document.getElementById("scene");
+    document.addEventListener("mousemove", (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      scene.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+    });
+  </script>
+</body>
+</html>

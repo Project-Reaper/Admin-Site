@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hell's Gate Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Cinzel', serif;
+      background: radial-gradient(circle, #0a0a0a, #000000);
+      color: red;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: url('https://www.transparenttextures.com/patterns/stardust.png');
+      opacity: 0.08;
+      animation: pulseBG 10s infinite alternate;
+      z-index: -1;
+    }
+
+    @keyframes pulseBG {
+      from { opacity: 0.05; }
+      to { opacity: 0.15; }
+    }
+
+    header {
+      background: rgba(30, 0, 0, 0.9);
+      padding: 15px 30px;
+      font-size: 1.8em;
+      border-bottom: 2px solid red;
+      box-shadow: 0 0 20px red;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: red;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .container {
+      display: flex;
+      height: calc(100vh - 70px);
+      position: relative;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: rgba(10, 0, 0, 0.9);
+      border-right: 2px solid red;
+      padding: 20px;
+      box-shadow: inset 0 0 20px red;
+      transition: left 0.3s ease;
+      z-index: 3;
+    }
+
+    .sidebar a {
+      display: block;
+      color: red;
+      text-decoration: none;
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid red;
+      border-radius: 8px;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+      background: red;
+      color: black;
+      box-shadow: 0 0 15px red;
+    }
+
+    .logout {
+      margin-top: auto;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .cards {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      flex: 1;
+      min-width: 200px;
+      background: rgba(30, 0, 0, 0.8);
+      padding: 20px;
+      border: 1px solid red;
+      border-radius: 10px;
+      box-shadow: 0 0 25px red;
+      text-align: center;
+    }
+
+    .charts {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    canvas {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid red;
+      border-radius: 10px;
+      box-shadow: 0 0 15px red;
+      padding: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: inline;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 70px;
+        left: -250px;
+        height: calc(100% - 70px);
+        width: 220px;
+        background: rgba(10, 0, 0, 0.95);
+        transition: left 0.3s ease;
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .overlay.show {
+        display: block;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span>🔥 Hell's Gate Admin Dashboard 🔥</span>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </header>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="container">
+    <nav class="sidebar" id="sidebar">
+      <a href="#">Dashboard</a>
+      <a href="users.html">Users</a>
+      <a href="#">Reports</a>
+      <a href="#">Messages</a>
+      <a href="#" class="logout" onclick="logout()">Logout</a>
+    </nav>
+
+    <main class="content">
+      <div class="cards">
+        <div class="card">
+          <h3>Total Users</h3>
+          <p id="userCount">Loading...</p>
+        </div>
+        <div class="card">
+          <h3>Sales</h3>
+          <p>$87,000</p>
+        </div>
+        <div class="card">
+          <h3>New Signups</h3>
+          <p>99</p>
+        </div>
+        <div class="card">
+          <h3>Visitors</h3>
+          <p>4,321</p>
+        </div>
+      </div>
+
+      <div class="charts">
+        <div style="flex:1; min-width: 300px;">
+          <h3>Sales Over Time</h3>
+          <canvas id="salesChart"></canvas>
+        </div>
+        <div style="flex:1; min-width: 300px;">
+          <h3>User Signups</h3>
+          <canvas id="signupChart"></canvas>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase + Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR5VuoKMKMij8yD2fexM1GCKuhAlnCAk0",
+      authDomain: "admin-9ddeb.firebaseapp.com",
+      databaseURL: "https://admin-9ddeb-default-rtdb.firebaseio.com",
+      projectId: "admin-9ddeb",
+      storageBucket: "admin-9ddeb.appspot.com",
+      messagingSenderId: "886793043821",
+      appId: "1:886793043821:web:c469d30496e14bba836464"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    async function fetchUserCount() {
+      const snapshot = await getDocs(collection(db, "users"));
+      document.getElementById('userCount').textContent = snapshot.size;
+    }
+
+    function logout() {
+      signOut(auth).then(() => {
+        alert("Logged out");
+        location.href = "login.html";
+      }).catch((error) => {
+        alert("Logout Error: " + error.message);
+      });
+    }
+
+    fetchUserCount();
+  </script>
+
+  <!-- Sidebar Toggle Script -->
+  <script>
+    const toggle = document.getElementById("menuToggle");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    toggle.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+      overlay.classList.toggle("show");
+    });
+
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("show");
+    });
+  </script>
+
+  <!-- Chart.js -->
+  <script>
+    const redGradient = (ctx) => {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+      gradient.addColorStop(0, "rgba(255,0,0,0.8)");
+      gradient.addColorStop(1, "rgba(100,0,0,0.5)");
+      return gradient;
+    };
+
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    new Chart(salesCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Sales',
+          data: [12000, 15000, 11000, 17000, 14000, 19000],
+          backgroundColor: redGradient(salesCtx),
+          borderColor: 'red',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: 'red' } } },
+        scales: {
+          x: { ticks: { color: 'red' } },
+          y: { ticks: { color: 'red' } }
+        }
+      }
+    });
+
+    const signupCtx = document.getElementById('signupChart').getContext('2d');
+    new Chart(signupCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Signups',
+          data: [25, 40, 30, 45, 35, 50, 60],
+          backgroundColor: 'rgba(255, 0, 0, 0.7)',
+          borderColor: 'red',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: 'red' } } },
+        scales: {
+          x: { ticks: { color: 'red' } },
+          y: { ticks: { color: 'red' } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
