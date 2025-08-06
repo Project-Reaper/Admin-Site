@@ -251,7 +251,7 @@
 
         const isAdminSnapshot = await db.ref("admins/" + uid).get();
         if (isAdminSnapshot.exists() && isAdminSnapshot.val() === true) {
-          window.location.href = "admin.html";
+          window.location.href = "dashboard.html";
         } else {
           errorMsg.textContent = "Access Denied: Not an Admin.";
           auth.signOut();
@@ -270,3 +270,4 @@
   </script>
 </body>
 </html>
+
