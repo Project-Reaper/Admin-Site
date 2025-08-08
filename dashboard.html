@@ -2,334 +2,802 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hell's Gate Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QuestBoard — Real Admin + Gamification + AI Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      font-family: 'Cinzel', serif;
-      background: radial-gradient(circle, #0a0a0a, #000000);
-      color: red;
-      overflow-x: hidden;
+    :root{
+      --bg-dark: #071019; --bg-light:#f5f7fb;
+      --card-dark:#0f1720; --card-light:#ffffff;
+      --accent:#ff6b6b; --accent2:#6be7ff;
+      --glass: rgba(255,255,255,0.03);
+      --text-dark:#e6eef6; --text-light:#0b1220;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+    html,body{height:100%;margin:0}
+    body[data-theme="dark"]{
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(107,231,255,0.03), transparent),
+        radial-gradient(800px 400px at 90% 90%, rgba(255,107,107,0.02), transparent),
+        var(--bg-dark);
+      color:var(--text-dark)
+    }
+    body[data-theme="light"]{
+      background: linear-gradient(180deg,#e9eef6,#ffffff);
+      color:var(--text-light)
     }
 
-    body::before {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: url('https://www.transparenttextures.com/patterns/stardust.png');
-      opacity: 0.08;
-      animation: pulseBG 10s infinite alternate;
-      z-index: -1;
-    }
-
-    @keyframes pulseBG {
-      from { opacity: 0.05; }
-      to { opacity: 0.15; }
-    }
-
-    header {
-      background: rgba(30, 0, 0, 0.9);
-      padding: 15px 30px;
-      font-size: 1.8em;
-      border-bottom: 2px solid red;
-      box-shadow: 0 0 20px red;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      z-index: 2;
-    }
-
-    .menu-toggle {
-      display: none;
-      background: transparent;
-      border: none;
-      color: red;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    .container {
-      display: flex;
-      height: calc(100vh - 70px);
-      position: relative;
-    }
-
-    .sidebar {
-      width: 220px;
-      background: rgba(10, 0, 0, 0.9);
-      border-right: 2px solid red;
-      padding: 20px;
-      box-shadow: inset 0 0 20px red;
-      transition: left 0.3s ease;
-      z-index: 3;
-    }
-
-    .sidebar a {
-      display: block;
-      color: red;
-      text-decoration: none;
-      margin-bottom: 20px;
-      padding: 10px;
-      border: 1px solid red;
-      border-radius: 8px;
-      text-align: center;
-      transition: 0.3s;
-    }
-
-    .sidebar a:hover {
-      background: red;
-      color: black;
-      box-shadow: 0 0 15px red;
-    }
-
-    .logout {
-      margin-top: auto;
-    }
-
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 2;
-    }
-
-    .content {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .cards {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 30px;
-    }
-
-    .card {
-      flex: 1;
-      min-width: 200px;
-      background: rgba(30, 0, 0, 0.8);
-      padding: 20px;
-      border: 1px solid red;
-      border-radius: 10px;
-      box-shadow: 0 0 25px red;
-      text-align: center;
-    }
-
-    .charts {
-      display: flex;
-      gap: 30px;
-      flex-wrap: wrap;
-    }
-
-    canvas {
-      background: rgba(0,0,0,0.5);
-      border: 1px solid red;
-      border-radius: 10px;
-      box-shadow: 0 0 15px red;
-      padding: 10px;
-    }
-
-    @media (max-width: 768px) {
-      .menu-toggle {
-        display: inline;
-      }
-
-      .sidebar {
-        position: fixed;
-        top: 70px;
-        left: -250px;
-        height: calc(100% - 70px);
-        width: 220px;
-        background: rgba(10, 0, 0, 0.95);
-        transition: left 0.3s ease;
-      }
-
-      .sidebar.open {
-        left: 0;
-      }
-
-      .overlay.show {
-        display: block;
-      }
-
-      .container {
-        flex-direction: column;
-      }
-    }
+    .app{display:grid;grid-template-columns:260px 1fr;gap:18px;padding:16px}
+    .card{background:linear-gradient(180deg,var(--card-dark),rgba(255,255,255,0.01));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    body[data-theme="light"] .card{background:var(--card-light);border:1px solid rgba(10,20,30,0.06)}
+    .sidebar{height:calc(100vh - 32px);position:sticky;top:16px;overflow:auto;padding:16px}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
+    nav{display:grid;gap:8px;margin-top:12px}
+    nav button{padding:10px;border-radius:8px;border:0;background:transparent;cursor:pointer;text-align:left}
+    nav button.active{background:linear-gradient(90deg, rgba(107,231,255,0.06), rgba(255,107,107,0.04))}
+    .main{padding:8px}
+    .row{display:flex;gap:12px;align-items:center}
+    .btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border:0;color:#071018;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+    .outline{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;cursor:pointer}
+    .small{font-size:13px;color:rgba(255,255,255,0.7)}
+    body[data-theme="light"] .small{color:#57606a}
+    /* Messages viewer simple styling (from user code integrated) */
+    #messages{margin-top:8px}
+    #messages .msg{padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:10px}
+    body[data-theme="light"] #messages .msg{background:#f3f6fb;border:1px solid #e1e8f0}
+    /* Toast / notification */
+    .toast-wrap{position:fixed;right:18px;top:18px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .toast{background:linear-gradient(90deg,var(--accent2),var(--accent));color:#071018;padding:10px 12px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.25);opacity:0;transform:translateY(-6px);transition:all .28s}
+    .toast.show{opacity:1;transform:none}
+    /* AI assistant widget */
+    .ai-widget{position:fixed;right:18px;bottom:18px;width:360px;max-width:calc(100% - 36px);background:linear-gradient(180deg,#071018,rgba(255,255,255,0.02));border-radius:12px;padding:0;border:1px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;z-index:9998}
+    body[data-theme="light"] .ai-widget{background:#fff;border:1px solid rgba(10,20,30,0.06)}
+    .ai-header{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center}
+    .ai-messages{padding:12px;max-height:260px;overflow:auto}
+    .ai-input{display:flex;gap:8px;padding:10px;border-top:1px solid rgba(255,255,255,0.03)}
+    .ai-input input{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .msg.ai{background:rgba(107,231,255,0.06);padding:8px;border-radius:8px;margin-bottom:8px;color:#071018}
+    .msg.user{background:rgba(255,107,107,0.06);padding:8px;border-radius:8px;margin-bottom:8px}
+    /* Settings toggles */
+    .setting-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0}
+    .toggle{width:44px;height:24px;border-radius:14px;background:rgba(255,255,255,0.06);position:relative;cursor:pointer}
+    .toggle .knob{position:absolute;width:20px;height:20px;top:2px;left:2px;border-radius:50%;background:#fff;transition:left .18s}
+    .toggle.on{background:linear-gradient(90deg,var(--accent2),var(--accent))}
+    .toggle.on .knob{left:22px}
+    /* responsive */
+    @media (max-width:980px){ .app{grid-template-columns:1fr} .sidebar{height:auto;position:relative} .ai-widget{width:calc(100% - 36px);right:18px;left:18px} }
   </style>
 </head>
-<body>
-  <header>
-    <span>🔥 Hell's Gate Admin Dashboard 🔥</span>
-    <button class="menu-toggle" id="menuToggle">☰</button>
-  </header>
-
-  <div class="overlay" id="overlay"></div>
-
-  <div class="container">
-    <nav class="sidebar" id="sidebar">
-      <a href="#dashboard">Dashboard</a>
-      <a href="users.html">Users</a>
-      <a href="reports.html">Reports</a>
-      <a href="messages.html">Messages</a>
-      <a href="#" class="logout" onclick="logout()">Logout</a>
-    </nav>
-
-    <main class="content">
-      <div class="cards">
-        <div class="card">
-          <h3>Total Users</h3>
-          <p id="userCount">Loading...</p>
-        </div>
-        <div class="card">
-          <h3>Sales</h3>
-          <p>$87,000</p>
-        </div>
-        <div class="card">
-          <h3>New Signups</h3>
-          <p>99</p>
-        </div>
-        <div class="card">
-          <h3>Visitors</h3>
-          <p>4,321</p>
+<body data-theme="dark">
+  <div class="app">
+    <aside class="sidebar card">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="logo">QB</div>
+        <div>
+          <div style="font-weight:700">QuestBoard</div>
+          <div class="small">Admin • Gamified</div>
         </div>
       </div>
 
-      <div class="charts">
-        <div style="flex:1; min-width: 300px;">
-          <h3>Sales Over Time</h3>
-          <canvas id="salesChart"></canvas>
-        </div>
-        <div style="flex:1; min-width: 300px;">
-          <h3>User Signups</h3>
-          <canvas id="signupChart"></canvas>
+      <div style="margin-top:12px" class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700" id="adminName">Admin</div>
+            <div class="small">Level <span id="levelDisp">1</span> • XP <span id="xpDisp">0</span></div>
+          </div>
+          <div style="text-align:right"><div class="small">Gold <strong id="gold">50</strong></div><div class="small">Energy <strong id="energy">3</strong>/3</div></div>
         </div>
       </div>
+
+      <nav>
+        <button class="active" data-view="hub">🏠 Hub</button>
+        <button data-view="messages">📨 Messages</button>
+        <button data-view="users">👥 Users</button>
+        <button data-view="reports">📜 Reports</button>
+        <button data-view="quests">🗺️ Quests</button>
+        <button data-view="settings">⚙️ Settings</button>
+      </nav>
+
+      <div style="margin-top:12px" class="card">
+        <strong>Firebase</strong>
+        <div class="small" style="margin-top:6px">Paste your firebaseConfig JSON (project & firestore) and press Connect. The app will listen to changes for users, messages & reports.</div>
+        <textarea id="fbConfig" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}' style="width:100%;margin-top:8px;height:90px;background:transparent;color:inherit;border-radius:8px;padding:8px;border:1px dashed rgba(255,255,255,0.04)"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="connectFb">Connect</button>
+          <button class="outline" id="disconnectFb">Disconnect</button>
+        </div>
+        <div style="margin-top:8px" class="small">Status: <strong id="fb-status">disconnected</strong></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- HUB -->
+      <div id="view-hub" class="card view">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2>Hub</h2>
+          <div class="small">Realtime overview & quick actions</div>
+        </div>
+
+        <div style="margin-top:12px" class="row">
+          <div style="flex:1" class="card">
+            <h4>Overview</h4>
+            <div class="row" style="margin-top:8px">
+              <div style="flex:1">
+                <div class="small">Pending messages: <strong id="pendingMessages">0</strong></div>
+                <div class="small">Pending users: <strong id="pendingUsers">0</strong></div>
+                <div class="small">Open reports: <strong id="openReports">0</strong></div>
+              </div>
+              <div style="width:220px;display:flex;flex-direction:column;gap:8px">
+                <button class="btn" id="approve3">Approve 3 users</button>
+                <button class="btn" id="resolve1">Resolve 1 report</button>
+                <button class="outline" id="openMessagesPanel">Open Messages Viewer</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="width:320px" class="card">
+            <h4>Active Mission</h4>
+            <div id="activeMissionTitle">No active mission</div>
+            <progress id="missionProg" value="0" max="100" style="width:100%;margin-top:8px"></progress>
+            <div style="display:flex;justify-content:space-between;margin-top:8px">
+              <div class="small">Reward: <span id="missionReward">—</span></div>
+              <div><button class="outline" id="abandonBtn" style="display:none">Abandon</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES VIEWER (the user supplied code embedded & enhanced) -->
+      <div id="view-messages" class="card view" style="display:none;margin-top:12px">
+        <h2>Contact Messages</h2>
+        <div class="small">Live viewer for the Firestore `contacts` collection. New messages will popup as notifications.</div>
+        <div id="messages"></div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn" id="refreshMessages">Refresh</button>
+          <button class="outline" id="markAllRead">Mark all read (local)</button>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="view-users" class="card view" style="display:none;margin-top:12px">
+        <h2>Users</h2>
+        <div class="small">Approve users to complete quests. When connected to Firestore approvals will update the DB.</div>
+        <div id="usersList" style="margin-top:8px"></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="view-reports" class="card view" style="display:none;margin-top:12px">
+        <h2>Reports</h2>
+        <div id="reportsList" style="margin-top:8px"></div>
+      </div>
+
+      <!-- QUESTS -->
+      <div id="view-quests" class="card view" style="display:none;margin-top:12px">
+        <h2>Quests</h2>
+        <div id="questList" style="margin-top:8px"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="view-settings" class="card view" style="display:none;margin-top:12px">
+        <h2>Settings</h2>
+        <div style="margin-top:8px">
+          <div class="setting-row"><div>Theme (dark / light)</div>
+            <div class="toggle" id="themeToggle"><div class="knob"></div></div>
+          </div>
+          <div class="setting-row"><div>AI Assistant (visible)</div>
+            <div class="toggle on" id="aiToggle"><div class="knob"></div></div>
+          </div>
+          <div class="setting-row"><div>Notifications (toast)</div>
+            <div class="toggle on" id="notifToggle"><div class="knob"></div></div>
+          </div>
+          <div class="setting-row"><div>Sound effects</div>
+            <div class="toggle" id="soundToggle"><div class="knob"></div></div>
+          </div>
+
+          <hr style="margin:12px 0;border:0;border-top:1px solid rgba(255,255,255,0.03)">
+
+          <div style="display:flex;gap:8px">
+            <button class="btn" id="exportSave">Export Save</button>
+            <input id="importFile" type="file" accept="application/json" style="display:block"/>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
-  <!-- Firebase + Firestore -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  <!-- Toasts -->
+  <div class="toast-wrap" id="toastWrap"></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAR5VuoKMKMij8yD2fexM1GCKuhAlnCAk0",
-      authDomain: "admin-9ddeb.firebaseapp.com",
-      databaseURL: "https://admin-9ddeb-default-rtdb.firebaseio.com",
-      projectId: "admin-9ddeb",
-      storageBucket: "admin-9ddeb.appspot.com",
-      messagingSenderId: "886793043821",
-      appId: "1:886793043821:web:c469d30496e14bba836464"
-    };
+  <!-- AI Assistant widget -->
+  <div class="ai-widget" id="aiWidget" aria-hidden="false">
+    <div class="ai-header">
+      <div><strong>AI Assistant</strong><div class="small">Control & help</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="openaiKey" type="password" placeholder="OpenAI key (optional)" style="padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" />
+        <button class="outline" id="setKeyBtn">Set</button>
+        <button class="outline" id="hideAi">Hide</button>
+      </div>
+    </div>
+    <div class="ai-messages" id="aiMessages"></div>
+    <div class="ai-input">
+      <input id="aiInput" type="text" placeholder='Try: "approve 3 users", "resolve report <id>", "open messages", "toggle theme"'/>
+      <button class="btn" id="aiSend">Send</button>
+    </div>
+  </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    async function fetchUserCount() {
-      const snapshot = await getDocs(collection(db, "users"));
-      document.getElementById('userCount').textContent = snapshot.size;
-    }
-
-    function logout() {
-      signOut(auth).then(() => {
-        alert("Logged out");
-        location.href = "login.html";
-      }).catch((error) => {
-        alert("Logout Error: " + error.message);
-      });
-    }
-
-    fetchUserCount();
-  </script>
-
-  <!-- Sidebar Toggle Script -->
+  <!-- Firebase SDKs (loaded dynamically when connecting) -->
   <script>
-    const toggle = document.getElementById("menuToggle");
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
+/* ============================
+   Single-file Admin App
+   - Integrates user-provided Messages Viewer code
+   - Syncs with Firestore when configured
+   - Gamification (quests, XP, gold)
+   - AI Assistant (command execution + optional OpenAI)
+   - Settings (theme, toggles) + toasts & sound
+   ============================ */
 
-    toggle.addEventListener("click", () => {
-      sidebar.classList.toggle("open");
-      overlay.classList.toggle("show");
-    });
+(() => {
+  // ---------- state ----------
+  const DEFAULT_HP = 100
+  const defaultState = {
+    xp:0, level:1, gold:50, energy:3, hp:DEFAULT_HP,
+    inventory:[], questsDone:[], activeMission:null,
+    pending: {messages:0, users:0, reports:0}
+  }
+  const state = JSON.parse(localStorage.getItem('qb_state')||'null') || defaultState
+  let firebaseApp = null, firestore = null, fbEnabled = false
+  let usersUnsub = null, reportsUnsub = null, messagesUnsub = null
 
-    overlay.addEventListener("click", () => {
-      sidebar.classList.remove("open");
-      overlay.classList.remove("show");
-    });
-  </script>
+  // ---------- helpers ----------
+  function save(){ localStorage.setItem('qb_state', JSON.stringify(state)) }
+  function toast(text, duration=5000){
+    if(!getToggle('notif')) return
+    const t = document.createElement('div'); t.className='toast'; t.textContent = text
+    document.getElementById('toastWrap').appendChild(t)
+    // show
+    requestAnimationFrame(()=>t.classList.add('show'))
+    setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),300) }, duration)
+    if(getToggle('sound')) playSfx('notif')
+  }
+  function playSfx(name){
+    if(!getToggle('sound')) return
+    // simple beep using WebAudio so no external files required
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      const o = ctx.createOscillator(); const g = ctx.createGain()
+      o.type = 'sine'; o.frequency.value = (name==='error')?220: (name==='notif')?440:600
+      o.connect(g); g.connect(ctx.destination); o.start()
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12)
+      setTimeout(()=>{ o.stop(); ctx.close() }, 150)
+    }catch(e){}
+  }
 
-  <!-- Chart.js -->
-  <script>
-    const redGradient = (ctx) => {
-      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, "rgba(255,0,0,0.8)");
-      gradient.addColorStop(1, "rgba(100,0,0,0.5)");
-      return gradient;
-    };
+  function setText(id, v){ const el=document.getElementById(id); if(el) el.textContent = v }
+  function getToggle(key){
+    // 'theme' is stored on body attribute; others stored in localStorage toggles
+    if(key==='theme') return document.body.getAttribute('data-theme') === 'dark'
+    const val = localStorage.getItem('qb_toggle_' + key)
+    if(val===null) return (key === 'ai' || key === 'notif') // defaults on
+    return val === 'true'
+  }
+  function setToggle(key, on){
+    if(key==='theme'){ document.body.setAttribute('data-theme', on ? 'dark' : 'light'); localStorage.setItem('qb_toggle_theme', on ? 'dark' : 'light'); return }
+    localStorage.setItem('qb_toggle_' + key, on ? 'true' : 'false')
+  }
 
-    const salesCtx = document.getElementById('salesChart').getContext('2d');
-    new Chart(salesCtx, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-          label: 'Sales',
-          data: [12000, 15000, 11000, 17000, 14000, 19000],
-          backgroundColor: redGradient(salesCtx),
-          borderColor: 'red',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }]
-      },
-      options: {
-        plugins: { legend: { labels: { color: 'red' } } },
-        scales: {
-          x: { ticks: { color: 'red' } },
-          y: { ticks: { color: 'red' } }
-        }
+  // ---------- initial UI bind & render ----------
+  function showView(v){
+    document.querySelectorAll('.view').forEach(el=>el.style.display='none')
+    const el = document.getElementById('view-' + v)
+    if(el) el.style.display = 'block'
+    // sync nav class
+    document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.view === v))
+  }
+  document.querySelectorAll('nav button').forEach(b=>{
+    b.addEventListener('click', ()=> showView(b.dataset.view))
+  })
+  showView('hub')
+
+  // settings toggles
+  const themeToggle = document.getElementById('themeToggle')
+  const aiToggle = document.getElementById('aiToggle')
+  const notifToggle = document.getElementById('notifToggle')
+  const soundToggle = document.getElementById('soundToggle')
+  function initToggles(){
+    // apply saved theme
+    const savedTheme = localStorage.getItem('qb_toggle_theme') || 'dark'
+    document.body.setAttribute('data-theme', savedTheme)
+    // knobs
+    const setToggleUI = (el, key) => {
+      const stateVal = getToggle(key)
+      el.classList.toggle('on', stateVal)
+    }
+    setToggleUI(themeToggle, 'theme'); setToggleUI(aiToggle, 'ai'); setToggleUI(notifToggle, 'notif'); setToggleUI(soundToggle, 'sound')
+    // clicks
+    themeToggle.addEventListener('click', ()=>{ const on = !getToggle('theme'); setToggle('theme', on); setToggle('theme', on); themeToggle.classList.toggle('on', on) })
+    aiToggle.addEventListener('click', ()=>{ const on = !getToggle('ai'); setToggle('ai', on); aiToggle.classList.toggle('on', on); document.getElementById('aiWidget').style.display = on ? 'flex' : 'none' })
+    notifToggle.addEventListener('click', ()=>{ const on = !getToggle('notif'); setToggle('notif', on); notifToggle.classList.toggle('on', on) })
+    soundToggle.addEventListener('click', ()=>{ const on = !getToggle('sound'); setToggle('sound', on); soundToggle.classList.toggle('on', on) })
+    // apply AI widget default
+    document.getElementById('aiWidget').style.display = getToggle('ai') ? 'flex' : 'none'
+  }
+  initToggles()
+
+  // ---------- basic gamification rendering ----------
+  function renderOverview(){
+    setText('levelDisp', state.level || 1)
+    setText('xpDisp', state.xp || 0)
+    setText('gold', state.gold || 0)
+    setText('energy', state.energy || 0)
+    setText('missionReward', state.activeMission ? state.activeMission.reward : '—')
+    setText('activeMissionTitle', state.activeMission ? `${state.activeMission.title} (${state.activeMission.progress}/${state.activeMission.goal})` : 'No active mission')
+    // pending counts
+    setText('pendingMessages', state.pending.messages || 0)
+    setText('pendingUsers', state.pending.users || 0)
+    setText('openReports', state.pending.reports || 0)
+  }
+
+  // ---------- integrate the user-supplied Messages Viewer code (but adapted into app) ----------
+  // User provided block integrated below and expanded to support real-time popups.
+  // The original code used firestore collection 'contacts' and ordered by 'created' desc.
+  // We'll implement a listener + a manual refresh fallback.
+
+  // Messages rendering (same markup as user code)
+  async function renderMessagesOnce(){
+    const container = document.getElementById('messages')
+    container.innerHTML = ''
+    if(!fbEnabled || !firestore){
+      container.textContent = 'Firestore not connected. Connect to view messages.'
+      return
+    }
+    try{
+      const snapshot = await firestore.collection('contacts').orderBy('created', 'desc').get()
+      if(snapshot.empty){
+        container.textContent = 'No messages found.'
+      } else {
+        snapshot.forEach(doc=>{
+          const data = doc.data()
+          const div = document.createElement('div'); div.className='msg'
+          div.innerHTML = `<strong>Name:</strong> ${escapeHTML(data.name || '—')}<br>
+                           <strong>Email:</strong> ${escapeHTML(data.email || '—')}<br>
+                           <strong>Message:</strong> ${escapeHTML(data.message || '—')}<br>
+                           <div class="small">Received: ${data.created ? new Date(data.created.seconds ? data.created.seconds*1000 : data.created).toLocaleString() : '—'}</div>`
+          container.appendChild(div)
+        })
       }
-    });
+    }catch(err){
+      container.textContent = 'Failed to load messages.'
+      console.error('Error getting messages:', err)
+    }
+  }
 
-    const signupCtx = document.getElementById('signupChart').getContext('2d');
-    new Chart(signupCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Signups',
-          data: [25, 40, 30, 45, 35, 50, 60],
-          backgroundColor: 'rgba(255, 0, 0, 0.7)',
-          borderColor: 'red',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        plugins: { legend: { labels: { color: 'red' } } },
-        scales: {
-          x: { ticks: { color: 'red' } },
-          y: { ticks: { color: 'red' } }
+  // helper escape
+  function escapeHTML(s){ if(!s) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+
+  // manual refresh button
+  document.getElementById('refreshMessages').addEventListener('click', renderMessagesOnce)
+
+  // open messages viewer quick action
+  document.getElementById('openMessagesPanel').addEventListener('click', ()=>{ showView('messages'); renderMessagesOnce() })
+
+  // ---------- Firestore real-time listeners ----------
+  function startFirestoreListeners(){
+    if(!firestore) return
+    // messages listener
+    try{
+      messagesUnsub = firestore.collection('contacts').orderBy('created','desc').limit(20).onSnapshot(snap=>{
+        // update pending count (unread concept optional: assume 'read' flag)
+        let pending = 0
+        snap.forEach(doc => {
+          const d = doc.data()
+          if(!d.read) pending++
+        })
+        state.pending.messages = pending
+        renderOverview()
+        // show popup for new messages (detected via doc changes)
+        snap.docChanges().forEach(change=>{
+          if(change.type === 'added'){
+            const data = change.doc.data()
+            const short = (data.message || '').slice(0,100)
+            toast(`New message from ${data.name || '—'}: ${short}`)
+            if(getToggle('notif')) playSfx('notif')
+          }
+        })
+        // also render latest in panel if open
+        if(document.getElementById('view-messages').style.display !== 'none') renderMessagesOnce()
+      })
+    }catch(e){ console.warn('messages listener error', e) }
+
+    // users listener
+    try{
+      usersUnsub = firestore.collection('users').onSnapshot(snap=>{
+        let pendingUsers = 0
+        const list = []
+        snap.forEach(doc=>{
+          const d = doc.data(); if(!d.approved) pendingUsers++
+          list.push({id:doc.id,...d})
+        })
+        state.pending.users = pendingUsers
+        renderOverview()
+        renderUsersList(list)
+      })
+    }catch(e){ console.warn('users listener error', e) }
+
+    // reports listener
+    try{
+      reportsUnsub = firestore.collection('reports').where('resolved','==',false).onSnapshot(snap=>{
+        state.pending.reports = snap.size
+        renderOverview()
+        const list = []
+        snap.forEach(doc => list.push({id:doc.id, ...doc.data()}))
+        renderReportsList(list)
+      })
+    }catch(e){ console.warn('reports listener error', e) }
+  }
+
+  // stop listeners
+  function stopFirestoreListeners(){
+    if(usersUnsub) usersUnsub(); if(reportsUnsub) reportsUnsub(); if(messagesUnsub) messagesUnsub()
+    usersUnsub = reportsUnsub = messagesUnsub = null
+  }
+
+  // ---------- UI: users & reports rendering and actions ----------
+  function renderUsersList(list){
+    const wrap = document.getElementById('usersList')
+    wrap.innerHTML = ''
+    if(!list || list.length===0){ wrap.textContent = 'No users found.'; return }
+    list.forEach(u=>{
+      const d = document.createElement('div'); d.className='small'; d.style.marginBottom = '8px'
+      d.innerHTML = `<strong>${escapeHTML(u.name || u.email || u.id)}</strong> • ${u.approved ? '<span style="color:lime">Approved</span>' : '<span style="color:orange">Pending</span>'}
+        <div style="margin-top:6px">
+          <button class="btn" onclick="approveUser('${u.id}')">Approve</button>
+          <button class="outline" onclick="deleteUser('${u.id}')">Delete</button>
+        </div>`
+      wrap.appendChild(d)
+    })
+  }
+  window.approveUser = async function(id){
+    if(!fbEnabled || !firestore){ simulateAction('approve',1); toast('Simulated approve (local)'); return }
+    try{
+      await firestore.collection('users').doc(id).update({approved:true, approvedAt:new Date()})
+      toast('Approved user ' + id)
+      playSfx('notif')
+    }catch(e){ toast('Approve failed: ' + e.message); console.error(e) }
+  }
+  window.deleteUser = async function(id){
+    if(!fbEnabled || !firestore){ toast('Firestore not connected'); return }
+    if(!confirm('Delete user '+id+'?')) return
+    try{ await firestore.collection('users').doc(id).delete(); toast('Deleted user ' + id) }catch(e){ toast('Delete failed'); console.error(e) }
+  }
+
+  function renderReportsList(list){
+    const wrap = document.getElementById('reportsList'); wrap.innerHTML = ''
+    if(!list || list.length===0){ wrap.textContent = 'No open reports.'; return }
+    list.forEach(r=>{
+      const d = document.createElement('div'); d.className='small'; d.style.marginBottom='8px'
+      d.innerHTML = `<strong>${escapeHTML(r.title || r.id)}</strong> <div class="small">${escapeHTML(r.reason || r.desc || '')}</div>
+        <div style="margin-top:6px">
+          <button class="btn" onclick="resolveReport('${r.id}')">Resolve</button>
+          <button class="outline" onclick="ignoreReport('${r.id}')">Ignore</button>
+        </div>`
+      wrap.appendChild(d)
+    })
+  }
+  window.resolveReport = async function(id){
+    if(!fbEnabled || !firestore){ simulateAction('resolve',1); toast('Simulated resolve (local)'); return }
+    try{
+      await firestore.collection('reports').doc(id).update({resolved:true, resolvedAt:new Date()})
+      toast('Resolved report ' + id)
+      playSfx('notif')
+    }catch(e){ toast('Resolve failed'); console.error(e) }
+  }
+  window.ignoreReport = async function(id){
+    if(!confirm('Ignore report ' + id + '?')) return
+    try{ if(fbEnabled && firestore) await firestore.collection('reports').doc(id).update({ignored:true}); toast('Ignored report ' + id) }catch(e){ console.error(e) }
+  }
+
+  // ---------- quick actions ----------
+  document.getElementById('approve3').addEventListener('click', async ()=>{
+    if(fbEnabled && firestore){
+      // approve up to 3 users
+      const q = await firestore.collection('users').where('approved','==',false).limit(3).get()
+      const batch = firestore.batch(); let count=0
+      q.forEach(doc=>{ batch.update(doc.ref, {approved:true, approvedAt:new Date()}); count++ })
+      await batch.commit()
+      toast('Approved ' + count + ' users in Firestore')
+    }else{ simulateAction('approve',3); toast('Simulated approving 3 users'); }
+  })
+  document.getElementById('resolve1').addEventListener('click', async ()=>{
+    if(fbEnabled && firestore){
+      const q = await firestore.collection('reports').where('resolved','==',false).limit(1).get()
+      const batch = firestore.batch(); let count=0
+      q.forEach(doc=>{ batch.update(doc.ref, {resolved:true, resolvedAt:new Date()}); count++ })
+      await batch.commit()
+      toast('Resolved ' + count + ' report(s)')
+    }else{ simulateAction('resolve',1); toast('Simulated resolving 1 report') }
+  })
+  document.getElementById('markAllRead').addEventListener('click', async ()=>{
+    if(!fbEnabled || !firestore){ toast('Not connected — marked locally'); return }
+    // mark recent 20 as read
+    const q = await firestore.collection('contacts').where('read','==',false).limit(20).get()
+    const batch = firestore.batch(); let count=0
+    q.forEach(doc=>{ batch.update(doc.ref, {read:true}); count++ })
+    await batch.commit(); toast('Marked ' + count + ' messages as read')
+  })
+
+  // ---------- gamification small helpers ----------
+  function simulateAction(type, count){
+    for(let i=0;i<count;i++){
+      if(state.activeMission){ state.activeMission.progress += 1; if(state.activeMission.progress >= state.activeMission.goal) { completeMission(); break } }
+    }
+    state.gold += Math.floor(Math.random()*5)
+    save(); renderOverview()
+  }
+  function completeMission(){
+    if(!state.activeMission) return
+    state.xp += state.activeMission.xp
+    state.gold += state.activeMission.gold
+    state.questsDone.push(state.activeMission.id)
+    state.activeMission = null
+    checkLevelUp(); save(); toast('Mission complete! Rewards granted.')
+  }
+  function checkLevelUp(){ while(state.xp >= (state.level*100)){ state.xp -= (state.level*100); state.level += 1; state.gold += 50; toast('Level up! Now level ' + state.level); } }
+
+  // ---------- AI assistant (simple + optional OpenAI) ----------
+  const aiMessages = document.getElementById('aiMessages')
+  const aiInput = document.getElementById('aiInput')
+  const aiSend = document.getElementById('aiSend')
+  const openaiKeyInput = document.getElementById('openaiKey')
+  let OPENAI_KEY = null
+  document.getElementById('setKeyBtn').addEventListener('click', ()=>{ OPENAI_KEY = openaiKeyInput.value.trim() || null; appendAI('System','OpenAI key set: ' + (OPENAI_KEY ? 'yes' : 'no')) })
+  document.getElementById('hideAi').addEventListener('click', ()=>{ document.getElementById('aiWidget').style.display = 'none'; setToggle('ai', false); aiToggle.classList.remove('on') })
+  aiSend.addEventListener('click', ()=>handleAI(aiInput.value))
+  aiInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') handleAI(aiInput.value) })
+
+  function appendAI(who, text){
+    const d = document.createElement('div'); d.className = 'msg ' + (who === 'You' ? 'user' : 'ai'); d.innerHTML = `<strong>${who}</strong><div style="margin-top:6px">${escapeHTML(text)}</div>`
+    aiMessages.appendChild(d); aiMessages.scrollTop = aiMessages.scrollHeight
+  }
+
+  async function handleAI(text){
+    text = (text||'').trim()
+    if(!text) return
+    appendAI('You', text); aiInput.value = ''
+    // Try to parse & execute certain commands locally
+    const parsed = await tryParseAndExecuteCommand(text)
+    if(parsed && parsed.handled){ appendAI('Assistant', parsed.message); return }
+    // If OpenAI key present, call API for smarter responses (note: key is used in-browser)
+    if(OPENAI_KEY){
+      appendAI('Assistant','Thinking...')
+      try{
+        const reply = await callOpenAI(text)
+        // show reply
+        appendAI('Assistant', reply)
+        // try to extract a one-line actionable command
+        const suggested = extractCommandFromText(reply)
+        if(suggested){
+          const exec = await tryParseAndExecuteCommand(suggested)
+          if(exec && exec.handled) appendAI('Assistant', 'Executed: ' + exec.message)
         }
+      }catch(err){ appendAI('Assistant','OpenAI error: ' + err.message); console.error(err) }
+    } else {
+      const fallback = localAssistant(text)
+      appendAI('Assistant', fallback)
+    }
+  }
+
+  // naive command extractor
+  function extractCommandFromText(s){
+    const lines = s.split(/\r?\n/).map(l=>l.trim()).filter(Boolean)
+    for(const l of lines) if(/^(approve|resolve|start|grant|open|toggle)/i.test(l)) return l
+    return null
+  }
+
+  function localAssistant(text){
+    const t = text.toLowerCase()
+    if(t.includes('status')) return `Level ${state.level} • XP ${state.xp} • Gold ${state.gold} • Energy ${state.energy} • HP ${state.hp}`
+    if(/^approve\s+\d+/.test(t)){ const n = Number(t.match(/\d+/)[0]); simulateAction('approve', n); return `Simulated approving ${n} users.` }
+    if(/^resolve\s+\d+/.test(t)){ const n = Number(t.match(/\d+/)[0]); simulateAction('resolve', n); return `Simulated resolving ${n} reports.` }
+    if(t.includes('open messages')){ showView('messages'); renderMessagesOnce(); return 'Opened messages viewer.' }
+    if(t.includes('open users')){ showView('users'); return 'Opened users.' }
+    if(t.includes('start battle')){ startBattle(); return 'Started a battle.' }
+    if(t.includes('grant') && /\d+/.test(t)){ const n = Number(t.match(/\d+/)[0]); state.gold += n; save(); return `Granted ${n} gold.` }
+    if(t.includes('toggle theme')){ const newTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; setToggle('theme', newTheme === 'dark'); document.body.setAttribute('data-theme', newTheme); return 'Toggled theme.' }
+    return "I didn't understand — try 'approve 3 users', 'resolve 1 report', 'open messages', 'status'."
+  }
+
+  async function tryParseAndExecuteCommand(text){
+    const t = text.trim()
+    let m
+    m = t.match(/approve\s+(\d+)\s+users?/i)
+    if(m){
+      const n = Number(m[1])
+      if(fbEnabled && firestore){
+        // approve N users in Firestore
+        const q = await firestore.collection('users').where('approved','==',false).limit(n).get()
+        const batch = firestore.batch(); let count=0
+        q.forEach(doc=>{ batch.update(doc.ref, {approved:true, approvedAt:new Date()}); count++ })
+        await batch.commit()
+        return {handled:true, message: `Approved ${count} users in Firestore.`}
+      }else{ simulateAction('approve', n); return {handled:true, message: `Simulated approving ${n} users (local).`} }
+    }
+    m = t.match(/resolve\s+report\s+([A-Za-z0-9\-_]+)/i)
+    if(m){
+      const id = m[1]
+      if(fbEnabled && firestore){
+        const ref = firestore.collection('reports').doc(id); const doc = await ref.get()
+        if(!doc.exists) return {handled:true, message:`Report ${id} not found.`}
+        await ref.update({resolved:true, resolvedAt:new Date()}); return {handled:true, message:`Resolved report ${id} in Firestore.`}
+      }else{ simulateAction('resolve',1); return {handled:true, message:`Simulated resolve of 1 report.`} }
+    }
+    m = t.match(/resolve\s+(\d+)\s+reports?/i)
+    if(m){
+      const n = Number(m[1])
+      if(fbEnabled && firestore){
+        const q = await firestore.collection('reports').where('resolved','==',false).limit(n).get()
+        const batch = firestore.batch(); let count=0
+        q.forEach(doc=>{ batch.update(doc.ref, {resolved:true, resolvedAt:new Date()}); count++ })
+        await batch.commit(); return {handled:true, message: `Resolved ${count} reports in Firestore.`}
+      }else{ simulateAction('resolve', n); return {handled:true, message:`Simulated resolve of ${n} reports.`} }
+    }
+    m = t.match(/open\s+messages?/i)
+    if(m){ showView('messages'); return {handled:true, message:'Opened Messages Viewer.'} }
+    m = t.match(/grant\s+(\d+)\s+gold/i)
+    if(m){ const n=Number(m[1]); state.gold += n; save(); return {handled:true, message:`Granted ${n} gold to you.`} }
+    m = t.match(/toggle\s+theme/i)
+    if(m){ const newTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; setToggle('theme', newTheme === 'dark'); document.body.setAttribute('data-theme', newTheme); return {handled:true, message:`Theme toggled to ${newTheme}.`} }
+    return {handled:false}
+  }
+
+  // Optional OpenAI call (in-browser). WARNING: sends key from user's browser to OpenAI.
+  async function callOpenAI(prompt){
+    if(!OPENAI_KEY) throw new Error('No OpenAI key set')
+    const res = await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer ' + OPENAI_KEY},
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {role:'system', content:'You are an admin assistant for QuestBoard. Provide concise actionable replies and, when appropriate, include single-line commands like "approve 3 users" or "resolve report <id>".'},
+          {role:'user', content: prompt}
+        ],
+        temperature:0.2, max_tokens:400
+      })
+    })
+    if(!res.ok) throw new Error('OpenAI API error: ' + res.status)
+    const data = await res.json()
+    return data.choices && data.choices[0] && (data.choices[0].message?.content || data.choices[0].text) || JSON.stringify(data)
+  }
+
+  // ---------- Firestore connection (load SDK on demand) ----------
+  document.getElementById('connectFb').addEventListener('click', async ()=>{
+    const raw = document.getElementById('fbConfig').value.trim()
+    if(!raw) return alert('Paste firebaseConfig JSON first (from your Firebase project settings).')
+    let cfg = null
+    try{ cfg = JSON.parse(raw) }catch(e){ return alert('Invalid JSON: ' + e.message) }
+    try{
+      // load firebase compat libs
+      await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js')
+      await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js')
+      firebaseApp = firebase.initializeApp(cfg)
+      firestore = firebase.firestore()
+      fbEnabled = true
+      document.getElementById('fb-status').textContent = 'connected'
+      toast('Connected to Firestore')
+      startFirestoreListeners()
+    }catch(err){ alert('Failed to connect Firebase: ' + err.message); console.error(err) }
+  })
+  document.getElementById('disconnectFb').addEventListener('click', ()=>{
+    stopFirestoreListeners()
+    fbEnabled = false; firestore = null; document.getElementById('fb-status').textContent = 'disconnected'
+    toast('Disconnected from Firestore')
+  })
+  function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s) }) }
+
+  // ---------- real-time message/render helpers ----------
+  async function renderMessagesOnce(){
+    // this uses the user's original code but integrated into the interface
+    const container = document.getElementById('messages'); container.innerHTML = ''
+    try{
+      if(!fbEnabled || !firestore){ container.textContent = 'No messages: Firestore not connected.'; return }
+      const snapshot = await firestore.collection('contacts').orderBy('created','desc').get()
+      if(snapshot.empty){ container.textContent = 'No messages found.' }
+      else{
+        snapshot.forEach(doc=>{
+          const data = doc.data()
+          const messageDiv = document.createElement('div'); messageDiv.style.marginBottom = '12px'; messageDiv.className = 'msg'
+          messageDiv.innerHTML = `<strong>Name:</strong> ${escapeHTML(data.name || '—')}<br>
+            <strong>Email:</strong> ${escapeHTML(data.email || '—')}<br>
+            <strong>Message:</strong> ${escapeHTML(data.message || '—')}<br>
+            <div class="small">Received: ${data.created ? new Date(data.created.seconds ? data.created.seconds*1000 : data.created).toLocaleString() : '—'}</div>`
+          container.appendChild(messageDiv)
+        })
       }
-    });
-  </script>
+    }catch(error){
+      container.textContent = 'Failed to load messages.'
+      console.error('Error getting messages:', error)
+    }
+  }
+
+  // ---------- toast on new message is handled in startFirestoreListeners --> messages listener ----------
+
+  // ---------- platform: initial render and periodic updates ----------
+  function initialRender(){ renderOverview(); renderQuests(); renderUsersListLocal(); renderReportsListLocal(); renderMessagesOnce() }
+  initialRender()
+  setInterval(()=>{ renderOverview() }, 1200)
+
+  // ---------- simple quests rendering ----------
+  const availableQuests = [
+    {id:'q1', title:'Approve new users (3)', desc:'Approve 3 pending users in Firestore.', xp:30, gold:20, reward:'30 XP', steps:3},
+    {id:'q2', title:'Resolve report', desc:'Resolve 1 open report in Firestore.', xp:20, gold:10, reward:'20 XP', steps:1},
+    {id:'q3', title:'Clean spam (5)', desc:'Remove spam posts (local simulated).', xp:50, gold:40, reward:'50 XP', steps:5}
+  ]
+  function renderQuests(){
+    const list = document.getElementById('questList'); list.innerHTML = ''
+    availableQuests.forEach(q=>{
+      const d = document.createElement('div'); d.className='small'; d.style.marginBottom='8px'
+      d.innerHTML = `<strong>${q.title}</strong> — ${q.desc} <div style="margin-top:6px"><button class="btn" onclick="acceptQuest('${q.id}')">Accept</button></div>`
+      list.appendChild(d)
+    })
+  }
+  window.acceptQuest = function(id){
+    if(state.activeMission){ return toast('Finish or abandon current active mission first') }
+    const q = availableQuests.find(x=>x.id===id)
+    state.activeMission = {id:q.id, title:q.title, progress:0, goal:q.steps, xp:q.xp, gold:q.gold, reward:q.reward}
+    save(); renderOverview(); toast('Mission accepted: ' + q.title)
+  }
+  document.getElementById('abandonBtn').addEventListener('click', ()=>{ if(confirm('Abandon mission?')){ state.activeMission = null; save(); renderOverview() } })
+
+  // local users & reports fallback UI (when Firestore not connected)
+  function renderUsersListLocal(){
+    const wrap = document.getElementById('usersList')
+    if(!wrap) return
+    // if firestore connected, real listener will overwrite this. Local demo list:
+    const local = [
+      {id:'u1', name:'John Doe', email:'john@example.com', approved:false},
+      {id:'u2', name:'Jane Smith', email:'jane@example.com', approved:false},
+      {id:'u3', name:'Mike Ross', email:'mike@example.com', approved:true}
+    ]
+    renderUsersList(local) // reuses same render function for DOM (works for objects shape)
+  }
+
+  function renderReportsListLocal(){
+    const wrap = document.getElementById('reportsList'); if(!wrap) return
+    const local = [
+      {id:'r1', title:'User complaint #342', reason:'Harassment', resolved:false},
+      {id:'r2', title:'Flagged content #981', reason:'Spam', resolved:false}
+    ]
+    renderReportsList(local) // same rendering function
+  }
+
+  // ---------- export / import save ----------
+  document.getElementById('exportSave').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'questboard-save.json'; a.click(); URL.revokeObjectURL(a.href)
+  })
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return
+    const r = new FileReader(); r.onload = ev=>{ try{ const parsed = JSON.parse(ev.target.result); Object.assign(state, parsed); save(); renderOverview(); toast('Save imported') }catch(err){ alert('Invalid file') } }; r.readAsText(f)
+  })
+
+  // ---------- sound & cleanup ----------
+  window.addEventListener('beforeunload', ()=> save() )
+
+  // ---------- expose a few methods for inline onclick handlers used above ----------
+  window.renderMessagesOnce = renderMessagesOnce
+  window.renderUsersListLocal = renderUsersListLocal
+  window.renderReportsListLocal = renderReportsListLocal
+  window.completeMission = completeMission
+  window.simulateAction = simulateAction
+
+  // ---------- finish ----------
+  // Helper to call initial local renders
+  renderOverview()
+  renderQuests()
+  renderUsersListLocal()
+  renderReportsListLocal()
+
+})();
+</script>
 </body>
 </html>
-
